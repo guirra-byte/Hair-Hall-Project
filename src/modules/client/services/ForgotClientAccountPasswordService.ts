@@ -1,6 +1,8 @@
-import { AppError } from "../../../shared/infra/errors/AppError";
 import { IDateProvider } from "../../../shared/providers/Date/IDateProvider";
 import { IClientRepository } from "../repositories/IClientRepository";
+import { IRefreshTokenRepository } from "../repositories/IRefreshTokenRepository";
+import { AppError } from "../../../shared/infra/errors/AppError";
+
 import { hash } from 'bcryptjs';
 import {
   v4 as uuidV4,
@@ -21,6 +23,7 @@ export interface IResponse {
 export class ForgotClientAccountPasswordService {
   constructor(
     private clientRepository: IClientRepository,
+    private refreshTokenRepository: IRefreshTokenRepository,
     private dateProvider: IDateProvider) { }
   async execute(
     refresh_token: string,
@@ -41,7 +44,7 @@ export class ForgotClientAccountPasswordService {
 
     const ensureRefreshTokenAreValid = await this
       .refreshTokenRepository
-      .compareToken(refresh_token);
+      .ensureRefreshToken(refresh_token);
 
     if (!ensureRefreshTokenAreValid) {
       throw new AppError(
@@ -51,7 +54,12 @@ export class ForgotClientAccountPasswordService {
       );
     }
 
-    const { lastForgotPasswordRequest } = ensureUserExists;
+    const lastRequest = ensureUserExists
+      .props
+      .lastForgotPasswordRequest;
+
+    const dateNow = await this.dateProvider.dateNow();
+    ensureUserExists.props.lastForgotPasswordRequest = dateNow;
 
     const now = await this
       .dateProvider
@@ -59,7 +67,7 @@ export class ForgotClientAccountPasswordService {
 
     const compareLastForgotPasswordRequest: boolean = await this
       .dateProvider
-      .compareIfBefore(now, lastForgotPasswordRequest);
+      .compareIfBefore(now, lastRequest);
 
     if (compareLastForgotPasswordRequest === false) {
 
@@ -90,7 +98,10 @@ export class ForgotClientAccountPasswordService {
           expires_in: number
         ) => {
 
-          const handleRemainderHashToken: string = `${remainder_hash_token[index === 0 ? index : 0]}-${remainder_hash_token[index === 1 ? index : 1]}-${remainder_hash_token[index === 2 ? index : 2]}-${remainder_hash_token[index === 3 ? index : 3]}`;
+          const handleRemainderHashToken: string = `${remainder_hash_token[index === 0 ? index : 0]}
+          -${remainder_hash_token[index === 1 ? index : 1]}
+          -${remainder_hash_token[index === 2 ? index : 2]}
+          -${remainder_hash_token[index === 3 ? index : 3]}`;
 
           const ensureHashTokenAreValid = validate(`${hash_token_key}-${handleRemainderHashToken}`);
 
@@ -103,8 +114,8 @@ export class ForgotClientAccountPasswordService {
               .clientRepository
               .updateHashExpiresIn(ensureHashTokenAreValid, addMinutes);
 
-            //Enviar o Email de reset de forgotPassword
-            //Com o Hash Token no Content do Email;
+            //[] - Enviar o Email de reset de forgotPassword
+            //[] - Com o Hash Token no Content do Email;
           }
 
           throw new AppError('Hash Token are invalid');
@@ -173,6 +184,12 @@ export class ForgotClientAccountPasswordService {
     await this
       .clientRepository
       .updateUserPassword(hashThePassword);
+
+    //[] - Realizar o envio de Email de confirmação de alteração de Password;
+    //[] - Realizar a remoção do Hash Token Key e Remainder Hash Token;
+    //[] - Realizar o Update na data para ser possível realizar um novo reset de Password;
+    //[] - Realizar contagem de resets de passwords por dia;
+    //[] - Se o User tentar realizar mais resets do que o permitido sua sessão é expirada;
   }
 
 }

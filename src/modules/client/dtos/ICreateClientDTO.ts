@@ -6,4 +6,5 @@ export interface ICreateClientDTO {
   email: string;
   password: string;
   phoneNumber: number;
+  lastForgotPasswordRequest?: string;
 }

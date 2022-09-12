@@ -11,7 +11,9 @@ export interface IClientRepository {
     middleName,
     email,
     password,
-    phoneNumber
+    phoneNumber,
+    lastForgotPasswordRequest
   }: ICreateClientDTO): Promise<Client<IClientProps>>
   findByEmail(email: string): Promise<Client<IClientProps>>
+  updateLastForgotPasswordRequest(user_id: string, dateNow: string): Promise<void>
 }

@@ -9,8 +9,8 @@ export interface IClientProps {
   email: string;
   password: string;
   phoneNumber: number;
+  lastForgotPasswordRequest?: string;
 }
-
 export class FakeClientRepository implements IClientRepository {
 
   private repository: Client<IClientProps>[];
@@ -23,7 +23,8 @@ export class FakeClientRepository implements IClientRepository {
     middleName,
     email,
     password,
-    phoneNumber
+    phoneNumber,
+
   }: ICreateClientDTO): Promise<Client<IClientProps>> {
 
     const client = new Client<IClientProps>({
@@ -46,5 +47,26 @@ export class FakeClientRepository implements IClientRepository {
 
     const client = this.repository[findClientByEmailIndex];
     return client;
+  }
+
+  async findById(id: string): Promise<Client<IClientProps>> {
+
+    const findClientIndexById = this
+      .repository
+      .findIndex(client => client.id === id);
+
+    const client = this.repository[findClientIndexById];
+    return client;
+  }
+
+  async updateLastForgotPasswordRequest(user_id: string, dateNow: string): Promise<void> {
+    const findClientIndexById = this
+      .repository
+      .findIndex(client => client.id === user_id);
+
+    this.repository[findClientIndexById]
+      .props
+      .lastForgotPasswordRequest = dateNow;
+
   }
 }

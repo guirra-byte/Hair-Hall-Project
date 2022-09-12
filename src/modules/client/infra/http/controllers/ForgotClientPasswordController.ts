@@ -29,4 +29,5 @@ export class ForgotClientAccountPasswordController {
     return response
       .status(202)
       .json('Senha foi alterada com sucesso!');
-  
+  }
+}
