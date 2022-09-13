@@ -1,7 +1,6 @@
 import { ICreateClientDTO } from "../../dtos/ICreateClientDTO";
 import { IClientRepository } from "../IClientRepository";
 import { Client } from "../../model/Client";
-
 export interface IClientProps {
 
   name: string;
@@ -68,5 +67,12 @@ export class FakeClientRepository implements IClientRepository {
       .props
       .lastForgotPasswordRequest = dateNow;
 
+  }
+
+  async removeClientById(id: string): Promise<void> {
+    const clientIndex = await this.repository
+      .findIndex(client => client.id === id);
+
+    await this.repository.splice(clientIndex, 1);
   }
 }

@@ -8,6 +8,6 @@ clientRouter.post('/');
 clientRouter.post('');
 
 //Remoção de Client pelo Client Customer Admin
-clientRouter.delete('');
+clientRouter.delete('/client/:user_id');
 
 //Deve ser testável por isso não pode depender de services externos;
