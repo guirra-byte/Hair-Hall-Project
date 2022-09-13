@@ -1,8 +1,7 @@
 import { IRefreshTokenDTO } from "../../dtos/IRefreshTokenDTO";
 import { RefreshToken } from "../../model/RefreshToken";
 import { IRefreshTokenRepository } from "../IRefreshTokenRepository";
-
-export class RefreshTokenRepository implements IRefreshTokenRepository {
+export class FakeRefreshTokenRepository implements IRefreshTokenRepository {
 
   private repository: RefreshToken[];
 

@@ -4,6 +4,7 @@ import { IDateProvider } from '../../../../shared/providers/Date/IDateProvider';
 import { sign } from 'jsonwebtoken';
 import { compare } from 'bcryptjs';
 import { AUTH } from '../../../../config/auth';
+import { AppError } from '../../../../shared/infra/errors/AppError';
 
 interface IRequest {
 
@@ -34,7 +35,11 @@ export class TokenService {
 
     if (!ensureClientEmailAlreadyExists) {
 
-      throw new Error("Email or Password are incorrect!");
+      throw new AppError(
+        'Email or Password are incorrect!',
+        400,
+        'authenticate_user_service'
+      );
     }
 
     const ensureClientPasswordCompare = compare(
@@ -44,7 +49,10 @@ export class TokenService {
 
     if (!ensureClientPasswordCompare) {
 
-      throw new Error("Email or Password are incorrect!");
+      throw new AppError(
+        'Email or Password are incorrect!',
+        400,
+        'authenticate_user_service');
     }
 
     const {

@@ -25,10 +25,5 @@ describe("Create a new Client Service", () => {
 
     const createClient = await createClientService.execute(client);
     expect(createClient).toHaveProperty('id');
-
-    const dateNow = await dateProvider.dateNow();
-    const [date,] = dateNow.split("T");
-    const [, time] = dateNow.split("T");
-    console.log(date, time);
   });
 });
