@@ -23,6 +23,7 @@ describe("Create a new Client Service", () => {
       phoneNumber: 92839756
     }
 
+    console.log(process.env.NODE_ENV);
     const createClient = await createClientService.execute(client);
     expect(createClient).toHaveProperty('id');
   });

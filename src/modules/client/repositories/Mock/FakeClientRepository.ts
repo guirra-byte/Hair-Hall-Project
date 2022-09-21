@@ -1,14 +1,19 @@
 import { ICreateClientDTO } from "../../dtos/ICreateClientDTO";
 import { IClientRepository } from "../IClientRepository";
 import { Client } from "../../model/Client";
+export interface IRemainderHashTokenProps {
+  hash_token: string;
+  remainder_hash_token: string;
+  expires_in: Date
+}
 export interface IClientProps {
-
   name: string;
   middleName: string;
   email: string;
   password: string;
   phoneNumber: number;
   lastForgotPasswordRequest?: string;
+  forgotPasswordTokens?: IRemainderHashTokenProps;
 }
 export class FakeClientRepository implements IClientRepository {
 
@@ -74,5 +79,53 @@ export class FakeClientRepository implements IClientRepository {
       .findIndex(client => client.id === id);
 
     await this.repository.splice(clientIndex, 1);
+  }
+
+  async saveHashToken(id: string, hashTokenKey: string): Promise<void> {
+    const clientIndex = await this.repository
+      .findIndex(user => user.id === id);
+
+    const user = this.repository[clientIndex];
+    user.props.forgotPasswordTokens?.hash_token ?? hashTokenKey;
+  }
+
+  async removeHashTokenKey(id: string): Promise<void> {
+    const clientIndex = await this.repository
+      .findIndex(user => user.id === id);
+
+    this.repository[clientIndex]
+      .props.forgotPasswordTokens?.hash_token ?? '';
+  }
+
+  async updateUserPassword(id: string, new_password: string): Promise<void> {
+    const clientIndex = await this.repository
+      .findIndex(user => user.id === id);
+
+    this.repository[clientIndex].props.password = new_password;
+  }
+
+  async saveRemainderHashToken(id: string, remainderHashToken: string): Promise<void> {
+    const clientIndex = await this.repository
+      .findIndex(user => user.id === id);
+
+    this.repository[clientIndex].props.forgotPasswordTokens
+      ?.remainder_hash_token ?? remainderHashToken;
+  }
+
+  async findRemainderHashToken(id: string): Promise<IRemainderHashTokenProps | undefined> {
+    const clientIndex = await this.repository
+      .findIndex(user => user.id === id);
+
+    const user = this.repository[clientIndex];
+    return user.props.forgotPasswordTokens;
+  }
+
+  async updateHashExpiresIn(client_id: string, expires_in: Date): Promise<void> {
+    const clientIndex = await this.repository
+      .findIndex(client => client.id === client_id);
+    const client = await this.repository[clientIndex];
+    const { props: { forgotPasswordTokens } } = client;
+    forgotPasswordTokens.expires_in = forgotPasswordTokens?.expires_in !== undefined
+      && forgotPasswordTokens !== undefined ? expires_in : new Date();
   }
 }
