@@ -1,18 +1,21 @@
 import nodemailer, { Transporter } from 'nodemailer';
-import { IMailProvider } from '../IMailProvider';
-import fs from 'fs';
 import { SES as SimpleEmailService } from 'aws-sdk';
-
+import { readFileSync, existsSync } from 'fs';
+import { IMailProvider } from '../IMailProvider';
+import { AppError } from '../../../errors/AppError';
+import handlebars from 'handlebars';
 export class SimpleEmailServiceProvider implements IMailProvider {
 
   private client: Transporter;
   private constructor() {
-    nodemailer.createTransport({
-      SES: new SimpleEmailService({
-        apiVersion: '2010-12-01',
-        region: process.env.AWS_SERVICE_REGION
-      })
-    });
+    nodemailer.createTransport(
+      {
+        SES: new SimpleEmailService(
+          {
+            apiVersion: '2010-12-01',
+            region: process.env.AWS_SERVICES_REGION
+          })
+      });
   }
 
   private static INSTANCE: SimpleEmailServiceProvider;
@@ -20,7 +23,6 @@ export class SimpleEmailServiceProvider implements IMailProvider {
     if (!SimpleEmailServiceProvider.INSTANCE) {
       SimpleEmailServiceProvider.INSTANCE = new SimpleEmailServiceProvider();
     }
-
     return SimpleEmailServiceProvider.INSTANCE;
   }
 
@@ -31,16 +33,27 @@ export class SimpleEmailServiceProvider implements IMailProvider {
     path: string
   ): Promise<void> {
 
-    const renderTemplate = fs
-      .readFileSync(path)
+    const ensureMailTemplateFileExists = existsSync(path);
+    if (!ensureMailTemplateFileExists) {
+      throw new AppError(
+        'This Template File does not exists!',
+        400,
+        'simple_email_service_provider'
+      );
+    }
+
+    const renderTemplate = readFileSync(path)
       .toString('utf-8');
 
-    // const templateParse = handlebarsg
+    const templateParse = handlebars.compile(renderTemplate);
+    const templateHTML = templateParse(variables);
+
     await this.client.sendMail({
       to: to,
+      from: "Rentalx <mabeldev@mguirra.dev>",
       subject: subject,
-      from: 'HairHall <mabeldev@mguirra.dev>',
-      html: ''
+      html: templateHTML
     });
   }
 }
+

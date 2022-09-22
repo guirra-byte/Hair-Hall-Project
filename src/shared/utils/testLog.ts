@@ -8,18 +8,18 @@ const replaceTestFilePath = async () => {
       npmCommandLine,
     ] = process.argv;
 
-    const reader = readline.createInterface({
+    const readable = readline.createInterface({
       input: process.stdin,
       output: process.stdout
     });
 
-    reader.question("Que module de Test deseja executar?\n",
+    readable.question("Que module de Test deseja executar?\n",
       function (answer: string) {
         const testFilePath = answer.replace(/\\/g, '/');
         const ensureFilePathExists: boolean = existsSync(testFilePath);
 
         if (ensureFilePathExists === false) {
-          reader.close();
+          readable.close();
           console.error('File not found!');
         }
 
